@@ -5,6 +5,9 @@
 -- brew install lazygit
 -- brew install ltex-ls
 -- brew install node
+-- brew install textidote
+-- brew install languagetool
+-- pip install --user yalafi
 -- npm install remark
 local packer = require("packer")
 packer.startup(
@@ -27,6 +30,13 @@ packer.startup(
     use {'akinsho/bufferline.nvim', tag = "*", requires = "kyazdani42/nvim-web-devicons", "moll/vim-bbye"  }
     use({ "nvim-lualine/lualine.nvim", requires = "kyazdani42/nvim-web-devicons" })
     use 'arkav/lualine-lsp-progress'
+    use ({
+        'nvimdev/lspsaga.nvim',
+        after = 'nvim-lspconfig',
+        config = function()
+            require('lspsaga').setup({})
+        end,
+    })
     use { 'nvim-telescope/telescope.nvim', requires = { "nvim-lua/plenary.nvim" } }
     use 'windwp/nvim-autopairs'
     use 'p00f/nvim-ts-rainbow'
@@ -101,9 +111,11 @@ vim.opt.termguicolors = true
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 vim.g.tex_flavor = 'latex'
+vim.g.vimtex_indent_enabled = 0
 vim.g.vimtex_view_method = 'sioyek'
 vim.g.vimtex_quickfix_mode = 0
 vim.g.vimtex_syntax_conceal_disable = 1
+vim.g.vimtex_grammar_vlty = {'lt_command': 'languagetool'}
 vim.g.lazygit_floating_window_winblend = 0 -- transparency of floating window
 vim.g.lazygit_floating_window_scaling_factor = 0.9 -- scaling factor for floating window
 vim.g.lazygit_floating_window_border_chars = {'╭','─', '╮', '│', '╯','─', '╰', '│'} -- customize lazygit popup window border characters
@@ -320,6 +332,29 @@ cmp.setup({
         ['<C-Space>'] = cmp.mapping.complete(),
         ['<C-e>'] = cmp.mapping.abort(),
         ['<CR>'] = cmp.mapping.confirm({ select = true }),
+        ["<Tab>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+                cmp.select_next_item()
+            -- You could replace the expand_or_jumpable() calls with expand_or_locally_jumpable() 
+            -- that way you will only jump inside the snippet region
+            elseif luasnip.expand_or_jumpable() then
+                luasnip.expand_or_jump()
+            elseif has_words_before() then
+                cmp.complete()
+            else
+                fallback()
+            end
+        end, { "i", "s" }),
+
+        ["<S-Tab>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+                cmp.select_prev_item()
+            elseif luasnip.jumpable(-1) then
+            luasnip.jump(-1)
+            else
+                fallback()
+            end
+        end, { "i", "s" }),
     }),
     sources = cmp.config.sources({
         { name = 'nvim_lsp' },
