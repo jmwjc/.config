@@ -67,6 +67,7 @@ packer.startup(
     use 'karb94/neoscroll.nvim'
     use { 'otavioschwanck/cool-substitute.nvim'}
     use {'Vigemus/iron.nvim'}
+    use {"frabjous/knap"}
 end)
 
 vim.g.encoding = "UTF-8"
@@ -111,11 +112,11 @@ vim.opt.termguicolors = true
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 vim.g.tex_flavor = 'latex'
-vim.g.vimtex_indent_enabled = 0
+vim.g.vimtex_indent_enabled = -1
 vim.g.vimtex_view_method = 'sioyek'
 vim.g.vimtex_quickfix_mode = 0
 vim.g.vimtex_syntax_conceal_disable = 1
-vim.g.vimtex_grammar_vlty = {'lt_command': 'languagetool'}
+-- vim.g.vimtex_grammar_vlty = {'lt_command': 'languagetool'}
 vim.g.lazygit_floating_window_winblend = 0 -- transparency of floating window
 vim.g.lazygit_floating_window_scaling_factor = 0.9 -- scaling factor for floating window
 vim.g.lazygit_floating_window_border_chars = {'╭','─', '╮', '│', '╯','─', '╰', '│'} -- customize lazygit popup window border characters
@@ -616,6 +617,21 @@ vim.cmd([[
     imap <silent><expr> <C-E> luasnip#choice_active() ? '<Plug>luasnip-next-choice' : '<C-E>'
     smap <silent><expr> <C-E> luasnip#choice_active() ? '<Plug>luasnip-next-choice' : '<C-E>'
 ]])
+
+-- set shorter name for keymap function
+local kmap = vim.keymap.set
+
+-- F5 processes the document once, and refreshes the view
+kmap({ 'n', 'v', 'i' },'<F5>', function() require("knap").process_once() end)
+
+-- F6 closes the viewer application, and allows settings to be reset
+kmap({ 'n', 'v', 'i' },'<F6>', function() require("knap").close_viewer() end)
+
+-- F7 toggles the auto-processing on and off
+kmap({ 'n', 'v', 'i' },'<F7>', function() require("knap").toggle_autopreviewing() end)
+
+-- F8 invokes a SyncTeX forward search, or similar, where appropriate
+kmap({ 'n', 'v', 'i' },'<F8>', function() require("knap").forward_jump() end)
 
 local ls = require("luasnip")
 -- some shorthands...
