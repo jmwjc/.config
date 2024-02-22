@@ -1,0 +1,18 @@
+
+[language-server.texlab.config.texlab]
+build.onSave = true
+build.forwardSearchAfter = true
+forwardSearch.executable = "sioyek"
+forwardSearch.args = [
+    "--reuse-window",
+    "--execute-command",
+    "toggle_synctex",
+    "--inverse-search",
+    "code -r -g \"%%1:%%2\"",
+    "--forward-search-file",
+    "%f",
+    "--forward-search-line",
+    "%l",
+    "%p",  
+]
+chktex.onEdit = true
