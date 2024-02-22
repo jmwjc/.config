@@ -1,5 +1,16 @@
+# brew install texlab
+# brew install marksman
+# brew install ltex-ls
 
 [language-server.texlab.config.texlab]
+build.args = [
+    "-pdf",
+    "-xelatex",
+    "-auxdir=.aux",
+    "-interaction=nonstopmode",
+    "-synctex=1",
+    "%f"
+]
 build.onSave = true
 build.forwardSearchAfter = true
 forwardSearch.executable = "sioyek"
@@ -8,7 +19,7 @@ forwardSearch.args = [
     "--execute-command",
     "toggle_synctex",
     "--inverse-search",
-    "code -r -g \"%%1:%%2\"",
+    "hx -r -g \"%%1:%%2\"",
     "--forward-search-file",
     "%f",
     "--forward-search-line",
@@ -16,3 +27,7 @@ forwardSearch.args = [
     "%p",  
 ]
 chktex.onEdit = true
+
+[[language]]
+name = "markdown"
+language-servers = [ "marksman", "ltex-ls" ]
