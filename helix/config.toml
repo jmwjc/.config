@@ -1,3 +1,7 @@
+# requirement
+# brew tap laishulu/macism
+# brew install macism
+
 theme = "solarized_light"
 
 [editor]
@@ -9,6 +13,7 @@ left = ["mode", "spinner", "read-only-indicator", "file-modification-indicator"]
 
 [editor.lsp]
 display-messages = true
+display-inlay-hints = true
 
 [editor.cursor-shape]
 insert = "bar"
@@ -19,3 +24,12 @@ space = "all"
 [editor.indent-guides]
 render = true
 
+[editor.soft-wrap]
+enable = true
+wrap-indicator = ""
+
+# macos automatically swith keylayout to en
+[keys.normal]
+"esc" = [":sh macism com.apple.keylayout.ABC", "normal_mode"]
+[keys.insert]
+"esc" = [":sh macism com.apple.keylayout.ABC", "normal_mode"]

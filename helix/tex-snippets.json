@@ -1,0 +1,49 @@
+{
+  "begin":{
+    "prefix": "\\begin",
+    "body": ["begin{$1}", "\t$0", "\\end{$1}"],
+    "description": "begin block"
+  },
+  "figure":{
+    "prefix": "figure",
+    "body": [
+      "\\begin{figure}[htb!]",
+      "\t\\centering",
+      "\t\\includegraphics[width=\\linewidth]{$1}",
+      "\t\\caption{$2}",
+      "\t\\label{$3}",
+      "\\end{figure}"
+    ],
+    "description": "figure"
+  },
+  "frac":{
+    "prefix": "\\",
+    "body": "frac{$1}{$2}",
+    "description": "fraction"
+  },
+  "table":{
+    "prefix": "table",
+    "body": [
+      "\\begin{table}[ht!]",
+      "\t\\centering",
+      "\t\\caption{$1}",
+      "\t\\begin{tabular}{$2}",
+      "\t\t\\toprule",
+      "\t\t$3",
+      "\t\t\\midrule",
+      "\t\t$4",
+      "\t\t\\bottomrule",
+      "\t\\end{tabular}",
+      "\\end{table}"
+    ],
+    "description": "table"
+  },
+  "tabular":{
+    "prefix": "tabular",
+    "body": [
+      "\\begin{tabular}{$1}",
+      "\t$2",
+      "\\end{tabular}"
+    ]
+  }
+}
