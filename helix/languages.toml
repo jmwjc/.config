@@ -31,14 +31,22 @@ forwardSearch.args = [
 chktex.onEdit = true
 
 # please enter the absolute address in args.
-[language-server.snippets-ls]
+[language-server.tex-snippets-ls]
 command = "snippets-ls"
 args = [ "-config", "/Users/wujc/.config/helix/tex-snippets.json" ]
 
 [[language]]
 name = "markdown"
-language-servers = [ "marksman", "ltex-ls", "snippets-ls" ]
+language-servers = [ "marksman", "ltex-ls", "tex-snippets-ls" ]
+[language.auto-pairs]
+'(' = ')'
+'$' = '$'
+'[' = ']'
+'`' = '`'
+'{' = '}'
+'*' = '*'
+'~' = '~'
 
 [[language]]
 name = "latex"
-language-servers = [ "texlab", "ltex-ls", "snippets-ls" ]
+language-servers = [ "texlab", "ltex-ls", "tex-snippets-ls" ]
