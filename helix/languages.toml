@@ -11,23 +11,30 @@ build.args = [
     "-auxdir=.aux",
     "-interaction=nonstopmode",
     "-synctex=1",
+    "-pvc",
     "%f"
 ]
 build.onSave = true
+
+auxDirectory = ".aux"
+build.auxDirectory = ".aux"
+build.pdfDirectory = "."
+
 # build.forwardSearchAfter = true
-forwardSearch.executable = "sioyek"
-forwardSearch.args = [
-    "--reuse-window",
-    "--execute-command",
-    "toggle_synctex",
-    "--inverse-search",
-    "hx -r -g \"%%1:%%2\"",
-    "--forward-search-file",
-    "%f",
-    "--forward-search-line",
-    "%l",
-    "%p",  
-]
+# forwardSearch.executable = "sioyek"
+# forwardSearch.args = [
+#     "--reuse-window",
+#     "--nofocus",
+#     "--execute-command",
+#     "toggle_synctex",
+#     "--inverse-search",
+#     "hx -r -g \"%%1:%%2\"",
+#     "--forward-search-file",
+#     "%f",
+#     "--forward-search-line",
+#     "%l",
+#     "%p",  
+# ]
 chktex.onEdit = true
 
 # please enter the absolute address in args.
