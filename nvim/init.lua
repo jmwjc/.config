@@ -37,7 +37,7 @@ require("lazy").setup({
     'hrsh7th/cmp-path',
     'hrsh7th/cmp-cmdline',
     'hrsh7th/nvim-cmp',
-    'L3MON4D3/LuaSnip',
+    {'L3MON4D3/LuaSnip', run = "make install_jsregexp"},
     'saadparwaiz1/cmp_luasnip',
     'kdheepak/cmp-latex-symbols',
     'windwp/nvim-autopairs',
@@ -54,6 +54,8 @@ require("lazy").setup({
     -- lualine
     {'nvim-lualine/lualine.nvim', dependencies = { 'nvim-tree/nvim-web-devicons' }},
     'arkav/lualine-lsp-progress',
+
+    {'numToStr/Comment.nvim', lazy = false,}
 
 })
 
@@ -165,6 +167,7 @@ cmp.setup.cmdline(':', {
         { name = 'cmdline' }
     })
 })
+
 -- autopairs
 local Rule = require('nvim-autopairs.rule')
 local npairs = require('nvim-autopairs')
@@ -283,6 +286,11 @@ vim.api.nvim_create_autocmd("User", {
     callback = require("lualine").refresh,
 })
 
+require('Comment').setup({
+    toggler = {line = '<C-c>'},
+    opleader = {line = '<C-c>'}
+})
+
 vim.g.encoding = "UTF-8"
 vim.o.fileencoding = "utf-8"
 vim.o.scrolloff = 8
@@ -347,6 +355,9 @@ map("v", "<", "<gv", opt)
 map("v", ">", ">gv", opt)
 map("v", "s", "<esc>/\\%V", opt)
 map("x", "x", "j", opt)
+-- map("n", "<C-c>", "gcc", opt)
+-- map("v", "<C-c>", "gc", opt)
+-- map("x", "<C-c>", "gc", opt)
 
 -- luasnip
 require("luasnip").config.set_config({
@@ -473,7 +484,7 @@ ls.add_snippets("lua",{
     }),
 })
 
-ls.add_snippets("tex",{
+local math_snippets = {
     s({ trig = "(.)__", regTrig = true, wordTrig = false, snippetType="autosnippet", dscr="auto subscript" },
         fmta(
             "<>_{<>}",
@@ -489,43 +500,13 @@ ls.add_snippets("tex",{
             "\\frac{<>}{<>}",
             { i(1), i(2) }
         ), { condition = tex_utils.in_mathzone } ),
-    s({ trig = "([\\%w%{%}]+)/", regTrig = true, wordTrig = false, snippetType="autosnippet", dscr="fraction" },
+
+    s({ trig = "%s([^%s,^%)]+)/", regTrig = true, wordTrig = false, snippetType="autosnippet", dscr="fraction" },
         fmta(
             "\\frac{<>}{<>}",
             { f( function(_, snip) return snip.captures[1] end ), i(1) }
         ), { condition = tex_utils.in_mathzone } ),
-    s({ trig = "(%()([\\%w%{%}%s]+)(%))/", regTrig = true, wordTrig = false, snippetType="autosnippet", dscr="fraction" },
-        fmta(
-            "\\frac{<>}{<>}",
-            { f( function(_, snip) return snip.captures[2] end ), i(1) }
-        ), { condition = tex_utils.in_mathzone } ),
-    s({ trig = "\\begin", snippetType="autosnippet", dscr="begin block" },
-        fmta(
-            [[
-                \begin{<>}
-                
-                \end{<>}
-            ]],
-            { i(1), rep(1) }
-        )),
-})
-ls.add_snippets("markdown",{
-    s({ trig = "(.)__", regTrig = true, wordTrig = false, snippetType="autosnippet", dscr="auto subscript" },
-        fmta(
-            "<>_{<>}",
-            { f( function(_, snip) return snip.captures[1] end ), i(1) }
-        )),
-    s({ trig = "(.)^^", regTrig = true, wordTrig = false, snippetType="autosnippet", dscr="auto superscript" },
-        fmta(
-            "<>^{<>}",
-            { f( function(_, snip) return snip.captures[1] end ), i(1) }
-        )),
-    s({ trig = '//', snippetType="autosnippet", dscr="fraction" },
-        fmta(
-            "\\frac{<>}{<>}",
-            { i(1), i(2) }
-        ), { condition = tex_utils.in_mathzone } ),
-    s({ trig = "(%w+)/", regTrig = true, wordTrig = false, snippetType="autosnippet", dscr="fraction" },
+    s({ trig = "%((.*)%)/", regTrig = true, wordTrig = false, snippetType="autosnippet", dscr="fraction" },
         fmta(
             "\\frac{<>}{<>}",
             { f( function(_, snip) return snip.captures[1] end ), i(1) }
@@ -539,4 +520,7 @@ ls.add_snippets("markdown",{
             ]],
             { i(1), rep(1) }
         )),
-})
+}
+
+ls.add_snippets("tex", math_snippets)
+ls.add_snippets("markdown", math_snippets)
