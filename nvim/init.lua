@@ -42,7 +42,10 @@ require("lazy").setup({
     'kdheepak/cmp-latex-symbols',
     'windwp/nvim-autopairs',
     -- vimtex
-    'frabjous/knap',
+    'lervag/vimtex',
+    'micangl/cmp-vimtex',
+    -- 'frabjous/knap',
+    -- 'jakewvincent/texmagic.nvim',
 
     -- theme
     {'maxmx03/solarized.nvim', lazy = false, priority = 1000,
@@ -50,6 +53,7 @@ require("lazy").setup({
             vim.o.background = 'light'
             vim.cmd.colorscheme 'solarized'
         end},
+    { "lukas-reineke/indent-blankline.nvim", main = "ibl", opts = {} },
 
     -- lualine
     {'nvim-lualine/lualine.nvim', dependencies = { 'nvim-tree/nvim-web-devicons' }},
@@ -71,7 +75,10 @@ vim.keymap.set('n', '<leader>fh', builtin.help_tags, {})
 require'nvim-treesitter.configs'.setup {
     ensure_installed = { "c", "lua", "vim", "vimdoc", "latex", "markdown_inline", "julia" },
     auto_install = true,
-    highlight = {enable = true}
+    highlight = {
+        enable = true,
+        disable = { "latex" }
+    }
 }
 
 -- mason
@@ -146,6 +153,7 @@ cmp.setup({
         { name = 'luasnip' },
         { name = 'treesitter' },
         { name = 'emoji' },
+        { name = 'vimtex' },
         { name = "latex_symbols", option = { strategy = 0, }, },
     }, { { name = 'buffer' }, { name = "path" } })
 })
@@ -197,17 +205,14 @@ cmp.event:on(
 -- Set up lspconfig.
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
 require('lspconfig')['ltex'].setup {capabilities = capabilities}
-require('lspconfig')['texlab'].setup {
-    auxDirectory = ".aux",
-    forwardSearch = {
-        args = {
-            
-        }
-    },
-}
 require('lspconfig')['marksman'].setup {capabilities = capabilities}
 require('lspconfig')['julials'].setup {capabilities = capabilities}
 require('lspconfig')['taplo'].setup {capabilities = capabilities}
+vim.g.tex_flavor = 'latex'
+require('lspconfig')['texlab'].setup {
+    capabilities = capabilities
+}
+
 vim.diagnostic.config({
     virtual_text = true,
     signs = true,
@@ -225,43 +230,6 @@ vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
         vim.diagnostic.open_float(nil, {focus=false, scope="cursor"})
     end
 })
-
--- set shorter name for keymap function
-local kmap = vim.keymap.set
-
--- F5 processes the document once, and refreshes the view
-kmap({ 'n', 'v', 'i' },'<F5>', function() require("knap").process_once() end)
-
--- F6 closes the viewer application, and allows settings to be reset
-kmap({ 'n', 'v', 'i' },'<F6>', function() require("knap").close_viewer() end)
-
--- F7 toggles the auto-processing on and off
-kmap({ 'n', 'v', 'i' },'<F7>', function() require("knap").toggle_autopreviewing() end)
-
--- F8 invokes a SyncTeX forward search, or similar, where appropriate
-kmap({ 'n', 'v', 'i' },'<F8>', function() require("knap").forward_jump() end)
-
--- xelatex compiler
-_G.xelatexcheck = function()
-    local isxelatex = false
-    local fifteenlines = vim.api.nvim_buf_get_lines(0,0,15,false)
-    for l,line in ipairs(fifteenlines) do
-        if (line:lower():match("xelatex")) or
-           (line:match("\\usepackage[^}]*mathspec")) or
-           (line:match("\\usepackage[^}]*fontspec")) or
-           (line:match("\\usepackage[^}]*unicode-math")) then
-           isxelatex = true
-           break
-       end
-    end
-    if (isxelatex) then
-        local knapsettings = vim.b.knap_settings or {}
-        knapsettings["textopdf"] = 
-            'xelatex -interaction=batchmode -halt-on-error -synctex=1 %docroot%'
-        vim.b.knap_settings = knapsettings
-    end
-end
-vim.api.nvim_create_autocmd({'BufRead'}, {pattern = {'*.tex'}, callback = xelatexcheck})
 
 -- lualine
 require('lualine').setup {
@@ -330,6 +298,17 @@ vim.opt.clipboard = "unnamedplus"
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 vim.opt.spelllang = {'en_us'}
+vim.g.vimtex_compiler_progname = 'nvr'
+vim.g.vimtex_compiler_latexmk = { aux_dir=".aux" }
+vim.g.vimtex_view_method = 'sioyek'
+-- vim.g.vimtex_indent_enabled = 0
+vim.g.vimtex_indent_on_ampersands = 0
+
+local highlight = {
+    "CursorColumn",
+    "Whitespace",
+}
+require("ibl").setup { indent = { char = {" "," "," "," "," "," "," "} } }
 
 -- keymap
 vim.g.mapleader = " "
@@ -349,6 +328,7 @@ map("n", "gl", "$", opt)
 map("n", "ge", "G", opt)
 map("n", "c", "s", opt)
 map("n", "d", "x", opt)
+map("n", "e", "ve", opt)
 map("n", "x", "<S-v>", opt)
 map("v", "y", "y<esc>", opt)
 map("v", "<", "<gv", opt)
