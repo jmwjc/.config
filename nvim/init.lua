@@ -267,14 +267,12 @@ vim.wo.number = true
 vim.wo.relativenumber = true
 vim.wo.cursorline = true
 vim.wo.signcolumn = "yes"
-vim.bo.tabstop = 4
-vim.bo.softtabstop = 4
-vim.bo.shiftwidth = 4
+vim.o.tabstop = 4
+vim.o.softtabstop = 4
+vim.o.shiftwidth = 4
 vim.go.shiftround = true
 vim.o.expandtab = true
-vim.bo.expandtab = true
 vim.o.autoindent = true
-vim.bo.autoindent = true
 vim.o.smartindent = true
 vim.o.ignorecase = true
 vim.o.smartcase = true
@@ -301,7 +299,7 @@ vim.opt.spelllang = {'en_us'}
 vim.g.vimtex_compiler_progname = 'nvr'
 vim.g.vimtex_compiler_latexmk = { aux_dir=".aux" }
 vim.g.vimtex_view_method = 'sioyek'
--- vim.g.vimtex_indent_enabled = 0
+vim.g.vimtex_indent_enabled = 0
 vim.g.vimtex_indent_on_ampersands = 0
 
 local highlight = {
@@ -335,6 +333,9 @@ map("v", "<", "<gv", opt)
 map("v", ">", ">gv", opt)
 map("v", "s", "<esc>/\\%V", opt)
 map("x", "x", "j", opt)
+map("n", "<esc>", ":silent ! macism com.apple.keylayout.ABC<CR>", opt)
+map("v", "<esc>", "<esc>:silent ! macism com.apple.keylayout.ABC<CR>", opt)
+map("x", "<esc>", "<esc>:silent ! macism com.apple.keylayout.ABC<CR>", opt)
 -- map("n", "<C-c>", "gcc", opt)
 -- map("v", "<C-c>", "gc", opt)
 -- map("x", "<C-c>", "gc", opt)
