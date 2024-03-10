@@ -77,7 +77,7 @@ require'nvim-treesitter.configs'.setup {
     auto_install = true,
     highlight = {
         enable = true,
-        disable = { "latex" }
+        -- disable = { "latex" }
     }
 }
 
@@ -129,7 +129,7 @@ cmp.setup({
                 cmp.select_next_item()
             -- You could replace the expand_or_jumpable() calls with expand_or_locally_jumpable() 
             -- that way you will only jump inside the snippet region
-            elseif luasnip.expand_or_jumpable() then
+            elseif luasnip.expand_or_locally_jumpable() then
                 luasnip.expand_or_jump()
             elseif has_words_before() then
                 cmp.complete()
@@ -301,6 +301,10 @@ vim.g.vimtex_compiler_latexmk = { aux_dir=".aux" }
 vim.g.vimtex_view_method = 'sioyek'
 vim.g.vimtex_indent_enabled = 0
 vim.g.vimtex_indent_on_ampersands = 0
+vim.g.vimtex_syntax_enabled = 0
+vim.g.vimtex_mappings_disable = {
+    n = {'dse','dsc','ds$','dsd','cse','csc','cs$','csd'}
+}
 
 local highlight = {
     "CursorColumn",
