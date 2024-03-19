@@ -22,7 +22,11 @@ vim.opt.rtp:prepend(lazypath)
 vim.g.mapleader = " " -- Make sure to set `mapleader` before lazy so your mappings are correct
 
 require("lazy").setup({
+    -- hop
+    'phaazon/hop.nvim',
+    -- Telescope
     {'nvim-telescope/telescope.nvim', branch = '0.1.x', dependencies = { 'nvim-lua/plenary.nvim' }},
+    'LinArcX/telescope-command-palette.nvim',
     {'nvim-treesitter/nvim-treesitter', run = ':TSUpdate'},
     'nvim-tree/nvim-web-devicons',
     -- LSP configuration
@@ -40,6 +44,7 @@ require("lazy").setup({
     {'L3MON4D3/LuaSnip', run = "make install_jsregexp"},
     'saadparwaiz1/cmp_luasnip',
     'kdheepak/cmp-latex-symbols',
+    'f3fora/cmp-spell',
     'windwp/nvim-autopairs',
     -- vimtex
     'lervag/vimtex',
@@ -59,21 +64,70 @@ require("lazy").setup({
     {'nvim-lualine/lualine.nvim', dependencies = { 'nvim-tree/nvim-web-devicons' }},
     'arkav/lualine-lsp-progress',
 
-    {'numToStr/Comment.nvim', lazy = false,}
+    -- comment
+    {'numToStr/Comment.nvim', lazy = false,},
+    {'folke/todo-comments.nvim', dependencies = { "nvim-lua/plenary.nvim" },opts={}},
 
+    -- Lazygit
+    {'kdheepak/lazygit.nvim', 
+        dependencies = {
+            'nvim-telescope/telescope.nvim',
+            'nvim-lua/plenary.nvim',
+        },
+        config=function()
+            require('telescope').load_extension('lazygit')
+        end,
+    },
+
+    -- others
+    'laishulu/vim-macos-ime',
+    'lewis6991/gitsigns.nvim'
 })
+
+require('hop').setup {}
+-- place this in one of your configuration file(s)
+local hop = require('hop')
+local directions = require('hop.hint').HintDirection
+vim.keymap.set('', 'f', function()
+  hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true })
+end, {remap=true})
+vim.keymap.set('', 'F', function()
+  hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true })
+end, {remap=true})
+vim.keymap.set('', 't', function()
+  hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true, hint_offset = -1 })
+end, {remap=true})
+vim.keymap.set('', 'T', function()
+  hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true, hint_offset = 1 })
+end, {remap=true})
 
 -- telescope
 local builtin = require('telescope.builtin')
 vim.keymap.set('n', '<leader>f', builtin.builtin, {})
 vim.keymap.set('n', '<leader>ff', builtin.find_files, {})
-vim.keymap.set('n', '<leader>fg', builtin.live_grep, {})
+vim.keymap.set('n', '<leader>fl', builtin.live_grep, {})
 vim.keymap.set('n', '<leader>fb', builtin.buffers, {})
 vim.keymap.set('n', '<leader>fh', builtin.help_tags, {})
+vim.keymap.set('n', '<leader>fd', builtin.diagnostics, {})
+--vim.keymap.set('n', '<leader>fg', builtin.lazygit, {})
+vim.keymap.set('n', '<leader>ft', ':TodoTelescope<CR>', {silent = true})
+require('telescope').setup{
+    pickers ={
+        find_files = {theme="dropdown"},
+        diagnostics = {theme="dropdown"},
+    },
+    extensions = {
+        command_palette = {
+            {"File",{"files", ":lua require('telescope.builtin').find_files()",1}}
+        }
+    }
+}
+require('telescope').load_extension('command_palette')
+require('telescope').load_extension('lazygit')
 
 -- treesitter
 require'nvim-treesitter.configs'.setup {
-    ensure_installed = { "c", "lua", "vim", "vimdoc", "latex", "markdown_inline", "julia" },
+    ensure_installed = { "c", "lua", "vim", "vimdoc", "latex", "markdown_inline", "julia", "comment" },
     auto_install = true,
     highlight = {
         enable = true,
@@ -155,6 +209,12 @@ cmp.setup({
         { name = 'emoji' },
         { name = 'vimtex' },
         { name = "latex_symbols", option = { strategy = 0, }, },
+	    { name = 'spell', option = { 
+	        keep_all_entries = false,
+	        enable_in_context = function()
+		        return true
+	        end,
+        }}
     }, { { name = 'buffer' }, { name = "path" } })
 })
 
@@ -204,14 +264,17 @@ cmp.event:on(
 
 -- Set up lspconfig.
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
-require('lspconfig')['ltex'].setup {capabilities = capabilities}
+require('lspconfig')['ltex'].setup {
+    capabilities = capabilities,
+    settings = {
+        ltex = {language = {"zh-CN","en-US"}}
+    }
+}
 require('lspconfig')['marksman'].setup {capabilities = capabilities}
 require('lspconfig')['julials'].setup {capabilities = capabilities}
 require('lspconfig')['taplo'].setup {capabilities = capabilities}
 vim.g.tex_flavor = 'latex'
-require('lspconfig')['texlab'].setup {
-    capabilities = capabilities
-}
+require('lspconfig')['texlab'].setup {capabilities = capabilities}
 
 vim.diagnostic.config({
     virtual_text = true,
@@ -254,6 +317,10 @@ vim.api.nvim_create_autocmd("User", {
     callback = require("lualine").refresh,
 })
 
+-- git
+require('gitsigns').setup()
+
+-- comment
 require('Comment').setup({
     toggler = {line = '<C-c>'},
     opleader = {line = '<C-c>'}
@@ -295,7 +362,8 @@ vim.o.showmode = false
 vim.opt.clipboard = "unnamedplus"
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
-vim.opt.spelllang = {'en_us'}
+-- vim.opt.spell = true
+vim.opt.spelllang = {'en_us', 'cjk'}
 vim.g.vimtex_compiler_progname = 'nvr'
 vim.g.vimtex_compiler_latexmk = { aux_dir=".aux" }
 vim.g.vimtex_view_method = 'sioyek'
@@ -305,6 +373,9 @@ vim.g.vimtex_syntax_enabled = 0
 vim.g.vimtex_mappings_disable = {
     n = {'dse','dsc','ds$','dsd','cse','csc','cs$','csd'}
 }
+vim.g.vimtex_sioyek_options = "--execute-command toggle_synctex"
+vim.g.macosime_normal_ime = 'com.apple.keylayout.ABC'
+vim.g.macosime_cjk_ime = 'com.apple.inputmethod.SCIM.ITABC'
 
 local highlight = {
     "CursorColumn",
@@ -328,6 +399,9 @@ map("n", "<C-w>", ":Bdelete!<CR>", opt)
 map("n", "gh", "0", opt)
 map("n", "gl", "$", opt)
 map("n", "ge", "G", opt)
+map("v", "gh", "0", opt)
+map("v", "gl", "$", opt)
+map("v", "ge", "G", opt)
 map("n", "c", "s", opt)
 map("n", "d", "x", opt)
 map("n", "e", "ve", opt)
@@ -337,9 +411,9 @@ map("v", "<", "<gv", opt)
 map("v", ">", ">gv", opt)
 map("v", "s", "<esc>/\\%V", opt)
 map("x", "x", "j", opt)
-map("n", "<esc>", ":silent ! macism com.apple.keylayout.ABC<CR>", opt)
-map("v", "<esc>", "<esc>:silent ! macism com.apple.keylayout.ABC<CR>", opt)
-map("x", "<esc>", "<esc>:silent ! macism com.apple.keylayout.ABC<CR>", opt)
+-- map("n", "<esc>", ":silent ! macism com.apple.keylayout.ABC<CR>", opt)
+-- map("v", "<esc>", "<esc><esc>:silent ! macism com.apple.keylayout.ABC<CR>", opt)
+-- map("x", "<esc>", "<esc> :silent ! macism com.apple.keylayout.ABC<CR>", opt)
 -- map("n", "<C-c>", "gcc", opt)
 -- map("v", "<C-c>", "gc", opt)
 -- map("x", "<C-c>", "gc", opt)
