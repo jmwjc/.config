@@ -27,6 +27,7 @@ require("lazy").setup({
     -- Telescope
     {'nvim-telescope/telescope.nvim', branch = '0.1.x', dependencies = { 'nvim-lua/plenary.nvim' }},
     'LinArcX/telescope-command-palette.nvim',
+    {'benfowler/telescope-luasnip.nvim',module = "telescope._extensions.luasnip"},
     {'nvim-treesitter/nvim-treesitter', run = ':TSUpdate'},
     'nvim-tree/nvim-web-devicons',
     -- LSP configuration
@@ -46,6 +47,7 @@ require("lazy").setup({
     'kdheepak/cmp-latex-symbols',
     'f3fora/cmp-spell',
     'windwp/nvim-autopairs',
+    'onsails/lspkind.nvim',
     -- vimtex
     'lervag/vimtex',
     'micangl/cmp-vimtex',
@@ -109,21 +111,29 @@ vim.keymap.set('n', '<leader>fl', builtin.live_grep, {})
 vim.keymap.set('n', '<leader>fb', builtin.buffers, {})
 vim.keymap.set('n', '<leader>fh', builtin.help_tags, {})
 vim.keymap.set('n', '<leader>fd', builtin.diagnostics, {})
---vim.keymap.set('n', '<leader>fg', builtin.lazygit, {})
+vim.keymap.set('n', '<leader>fg', ':Telescope lazygit<CR>', {silent = true})
 vim.keymap.set('n', '<leader>ft', ':TodoTelescope<CR>', {silent = true})
+vim.keymap.set('n', '<leader>fs', ':Telescope luasnip<CR>', {silent = true})
 require('telescope').setup{
     pickers ={
-        find_files = {theme="dropdown"},
+        find_files = {
+            theme="dropdown",
+        },
         diagnostics = {theme="dropdown"},
     },
     extensions = {
         command_palette = {
-            {"File",{"files", ":lua require('telescope.builtin').find_files()",1}}
-        }
-    }
+            {"snippets",":lua require('telescope').luasnip()"}
+        },
+        luasnip = require("telescope.themes").get_dropdown({
+            border   = true,
+            preview  = { check_mime_type  = true },
+        })
+    },
 }
 require('telescope').load_extension('command_palette')
 require('telescope').load_extension('lazygit')
+require('telescope').load_extension('luasnip')
 
 -- treesitter
 require'nvim-treesitter.configs'.setup {
@@ -171,6 +181,11 @@ cmp.setup({
         end,
     },
     window = {
+        completion = {
+        winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
+        col_offset = -3,
+        side_padding = 0,
+        },
     },
     mapping = cmp.mapping.preset.insert({
         ['<C-b>'] = cmp.mapping.scroll_docs(-4),
@@ -202,6 +217,17 @@ cmp.setup({
             end
         end, { "i", "s" }),
     }),
+    formatting = {
+        fields = { "kind", "abbr", "menu" },
+        format = function(entry, vim_item)
+          local kind = require("lspkind").cmp_format({ mode = "symbol_text", maxwidth = 50 })(entry, vim_item)
+          local strings = vim.split(kind.kind, "%s", { trimempty = true })
+          kind.kind = " " .. (strings[1] or "") .. " "
+          kind.menu = "    (" .. (strings[2] or "") .. ")"
+    
+          return kind
+        end,
+    },
     sources = cmp.config.sources({
         { name = 'nvim_lsp' },
         { name = 'luasnip' },
@@ -210,7 +236,7 @@ cmp.setup({
         { name = 'vimtex' },
         { name = "latex_symbols", option = { strategy = 0, }, },
 	    { name = 'spell', option = { 
-	        keep_all_entries = false,
+	        keep_all_entries = true,
 	        enable_in_context = function()
 		        return true
 	        end,
@@ -583,3 +609,4 @@ local math_snippets = {
 
 ls.add_snippets("tex", math_snippets)
 ls.add_snippets("markdown", math_snippets)
+
