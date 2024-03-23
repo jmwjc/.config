@@ -35,7 +35,9 @@ require("lazy").setup({
     'neovim/nvim-lspconfig',
     'williamboman/mason-lspconfig.nvim',
     'mfussenegger/nvim-lint',
+    'nvim-lua/lsp-status.nvim',
     {"folke/trouble.nvim", dependencies = { "nvim-tree/nvim-web-devicons" }},
+    {"brymer-meneses/grammar-guard.nvim", requires = { "neovim/nvim-lspconfig", "williamboman/nvim-lsp-installer"}},
     -- complement
     'hrsh7th/cmp-nvim-lsp',
     'hrsh7th/cmp-buffer',
@@ -64,7 +66,6 @@ require("lazy").setup({
 
     -- lualine
     {'nvim-lualine/lualine.nvim', dependencies = { 'nvim-tree/nvim-web-devicons' }},
-    'arkav/lualine-lsp-progress',
 
     -- comment
     {'numToStr/Comment.nvim', lazy = false,},
@@ -81,6 +82,13 @@ require("lazy").setup({
         end,
     },
 
+    -- IDE
+    {'s1n7ax/nvim-terminal',
+    	config = function()
+            vim.o.hidden = true
+            require('nvim-terminal').setup()
+        end,
+    },
     -- others
     'laishulu/vim-macos-ime',
     'lewis6991/gitsigns.nvim'
@@ -125,10 +133,7 @@ require('telescope').setup{
         command_palette = {
             {"snippets",":lua require('telescope').luasnip()"}
         },
-        luasnip = require("telescope.themes").get_dropdown({
-            border   = true,
-            preview  = { check_mime_type  = true },
-        })
+        luasnip = require("telescope.themes").get_dropdown()
     },
 }
 require('telescope').load_extension('command_palette')
@@ -180,13 +185,7 @@ cmp.setup({
             require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
         end,
     },
-    window = {
-        completion = {
-        winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
-        col_offset = -3,
-        side_padding = 0,
-        },
-    },
+    -- window = { completion = {border = "rounded"}},
     mapping = cmp.mapping.preset.insert({
         ['<C-b>'] = cmp.mapping.scroll_docs(-4),
         ['<C-f>'] = cmp.mapping.scroll_docs(4),
@@ -296,9 +295,9 @@ require('lspconfig')['ltex'].setup {
         ltex = {language = {"zh-CN","en-US"}}
     }
 }
-require('lspconfig')['marksman'].setup {capabilities = capabilities}
+-- require('lspconfig')['marksman'].setup {capabilities = capabilities}
 require('lspconfig')['julials'].setup {capabilities = capabilities}
-require('lspconfig')['taplo'].setup {capabilities = capabilities}
+-- require('lspconfig')['taplo'].setup {capabilities = capabilities}
 vim.g.tex_flavor = 'latex'
 require('lspconfig')['texlab'].setup {capabilities = capabilities}
 
@@ -331,17 +330,17 @@ require('lualine').setup {
     -- extensions = { "nvim-tree", "toggleterm" },
     sections = {
         lualine_b = {'branch','diff'},
-        lualine_c = {'lsp_progress'},
+        lualine_c = {"require'lsp-status'.status()"},
         lualine_x = {},
         lualine_y = {'diagnostics'},
     },
 }
-vim.api.nvim_create_augroup("lualine_augroup", { clear = true })
-vim.api.nvim_create_autocmd("User", {
-    group = "lualine_augroup",
-    pattern = "LspProgressStatusUpdated",
-    callback = require("lualine").refresh,
-})
+--vim.api.nvim_create_augroup("lualinugroup", { clear = true }
+--vim.api.nvim_create_autocmd("User", {
+--    group = "lualine_augroup",
+--    pattern = "LspProgressStatusUpdated",
+--    callback = require("lualine").refresh,
+--})
 
 -- git
 require('gitsigns').setup()
@@ -351,9 +350,10 @@ require('Comment').setup({
     toggler = {line = '<C-c>'},
     opleader = {line = '<C-c>'}
 })
+-- hook to nvim-lspconfig
+require("grammar-guard").init()
 
 vim.g.encoding = "UTF-8"
-vim.o.fileencoding = "utf-8"
 vim.o.scrolloff = 8
 vim.o.sidescrolloff = 8
 vim.wo.number = true
@@ -563,14 +563,41 @@ tex_utils.in_beamer = function()
     return false
 end
 
-ls.add_snippets("lua",{
-    s({ trig = "hi", snippetType="autosnippet" },{
-        t("Hello World!"),
-    }),
+local date = function()
+    return { os.date "%Y-%m-%d" }
+end
+
+local filename = function()
+    return { vim.fn.expand "%:p" }
+end
+
+ls.add_snippets(nil, {
+    all = {
+        s({trig = "date", namr = "Date", dscr = "Date in the form of YYYY-MM-DD",}, {
+            f(date, {}),
+        }),
+        s({trig = "pwd", namr = "PWD", dscr = "Path to current working directory",}, {
+            f(bash, {}, { user_args = { "pwd" } }),
+        }),
+        s({trig = "filename", namr = "Filename", dscr = "Absolute path to file",}, {
+            f(filename, {}),
+        }),
+    },
+    tex = {
+        s({trig = "magic", namr = "magic", dscr = "add magic comments"}, fmta(
+        [[
+        %! TEX program = xelatex
+        %! TEX encoding = UTF-8 Unicode
+        ]],{}
+        )),
+        s({trig = "ltex", namr = "ltex", dscr = "ltex language setting"}, {
+            t('% ltex: language='),i(1,'zh-CN')
+        })
+    }
 })
 
 local math_snippets = {
-    s({ trig = "(.)__", regTrig = true, wordTrig = false, snippetType="autosnippet", dscr="auto subscript" },
+    s({ namr="AutoSubscript", trig = "(.)__", regTrig = true, wordTrig = false, snippetType="autosnippet", dscr="auto subscript" },
         fmta(
             "<>_{<>}",
             { f( function(_, snip) return snip.captures[1] end ), i(1) }
@@ -609,4 +636,3 @@ local math_snippets = {
 
 ls.add_snippets("tex", math_snippets)
 ls.add_snippets("markdown", math_snippets)
-
