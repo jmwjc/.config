@@ -52,7 +52,7 @@ require("lazy").setup({
     'onsails/lspkind.nvim',
     -- vimtex
     'lervag/vimtex',
-    'micangl/cmp-vimtex',
+    -- 'micangl/cmp-vimtex',
     -- 'frabjous/knap',
     -- 'jakewvincent/texmagic.nvim',
 
@@ -71,7 +71,7 @@ require("lazy").setup({
     {'numToStr/Comment.nvim', lazy = false,},
     {'folke/todo-comments.nvim', dependencies = { "nvim-lua/plenary.nvim" },opts={}},
 
-    -- Lazygit
+    -- Git
     {'kdheepak/lazygit.nvim', 
         dependencies = {
             'nvim-telescope/telescope.nvim',
@@ -81,12 +81,20 @@ require("lazy").setup({
             require('telescope').load_extension('lazygit')
         end,
     },
+    'sindrets/diffview.nvim',
 
     -- IDE
-    {'s1n7ax/nvim-terminal',
-    	config = function()
-            vim.o.hidden = true
-            require('nvim-terminal').setup()
+    -- {'s1n7ax/nvim-terminal',
+    -- 	config = function()
+    --         vim.o.hidden = true
+    --         require('nvim-terminal').setup()
+    --     end,
+    -- },
+    -- keymap
+    {'folke/which-key.nvim', event = "VeryLazy",
+        init = function()
+            vim.o.timeout = true
+            vim.o.timeoutlen = 0
         end,
     },
     -- others
@@ -94,34 +102,77 @@ require("lazy").setup({
     'lewis6991/gitsigns.nvim'
 })
 
-require('hop').setup {}
--- place this in one of your configuration file(s)
+-- TODO: config command_palette
+-- whichkey
+-- vim.g.mapleader = " "
+-- vim.g.maplocalleader = "/"
+local wk = require("which-key")
+local builtin = require('telescope.builtin')
 local hop = require('hop')
 local directions = require('hop.hint').HintDirection
-vim.keymap.set('', 'f', function()
-  hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true })
-end, {remap=true})
-vim.keymap.set('', 'F', function()
-  hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true })
-end, {remap=true})
-vim.keymap.set('', 't', function()
-  hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true, hint_offset = -1 })
-end, {remap=true})
-vim.keymap.set('', 'T', function()
-  hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true, hint_offset = 1 })
-end, {remap=true})
+wk.register({
+    f = { 
+        function()
+            hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true })
+        end,
+    "find next letter" },
+    F = {
+        function()
+            hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true })
+        end,
+    "find previous letter" },
+    d = { 'x', "Delete"},
+    x = { '<S-v>', "Select current line"},
+    c = { 's', "Change"},
+    ["<ESC>"] = { '<ESC><cmd>noh<CR>', 'ESC'},
+    ["<c-l>"] = { 'w', "Next word"},
+    ["<c-h>"] = { 'ge', "Previous word"},
+    ["<s-l>"] = { 've', "Next word"},
+    ["<s-h>"] = { 'vb', "Previous word"},
+}, {})
+wk.register({
+    f = { 
+        function()
+            hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true })
+        end,
+    "find next letter" },
+    F = {
+        function()
+            hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true })
+        end,
+    "find previous letter" },
+    x = { 'j', "Select current line"},
+    ["<c-l>"] = { 'e', "Next word"},
+    ["<c-h>"] = { 'b', "Previous word"},
+    ["<s-l>"] = { 'e', "Next word"},
+    ["<s-h>"] = { 'b', "Previous word"},
+    ["<"] = { '<gv', "Indent out"},
+    [">"] = { '>gv', "Indent in"},
+}, { mode = 'v' })
+wk.register({
+    f = { builtin.find_files , "file picker" },
+    l = { builtin.live_grep , "live_grep picker" },
+    b = { builtin.buffers , "buffers picker" },
+    h = { builtin.help_tags , "help_tags picker" },
+    d = { "<cmd>TroubleToggle document_diagnostics<CR>" , "diagnostic picker" },
+    q = { "<cmd>TroubleToggle quickfix<CR>" , "quickfix picker" },
+    t = { "<cmd>TodoTrouble<CR>" , "TodoList picker" },
+    p = { "<cmd>Telescope command_palette<CR>" , "TodoList picker" },
+    s = { "<cmd>Telescope luasnip<CR>" , "TodoList picker" },
+}, { prefix = "<leader>" })
+wk.register({
+    e = { 'G' , "Last line" },
+    h = { '0' , "Start of line" },
+    l = { '$' , "End of line" },
+}, { prefix = "g" })
+wk.register({
+    e = { 'G' , "Last line" },
+    h = { '0' , "Start of line" },
+    l = { '$' , "End of line" },
+}, { prefix = "g", mode = 'v' })
 
--- telescope
-local builtin = require('telescope.builtin')
-vim.keymap.set('n', '<leader>f', builtin.builtin, {})
-vim.keymap.set('n', '<leader>ff', builtin.find_files, {})
-vim.keymap.set('n', '<leader>fl', builtin.live_grep, {})
-vim.keymap.set('n', '<leader>fb', builtin.buffers, {})
-vim.keymap.set('n', '<leader>fh', builtin.help_tags, {})
-vim.keymap.set('n', '<leader>fd', builtin.diagnostics, {})
-vim.keymap.set('n', '<leader>fg', ':Telescope lazygit<CR>', {silent = true})
-vim.keymap.set('n', '<leader>ft', ':TodoTelescope<CR>', {silent = true})
-vim.keymap.set('n', '<leader>fs', ':Telescope luasnip<CR>', {silent = true})
+require('hop').setup {}
+
 require('telescope').setup{
     pickers ={
         find_files = {
@@ -131,6 +182,15 @@ require('telescope').setup{
     },
     extensions = {
         command_palette = {
+            {"vimtex",
+                { "Status", ":VimtexStatus" },
+                { "Clean", ":VimtexClean" },
+                { "Stop", ":VimtexStopAll" },
+                { "Compile", ":VimtexCompile" },
+            },
+	    {"diffview",
+            { "Diff current file", ":DiffviewFileHistory %"}
+        },
             {"snippets",":lua require('telescope').luasnip()"}
         },
         luasnip = require("telescope.themes").get_dropdown()
@@ -232,7 +292,7 @@ cmp.setup({
         { name = 'luasnip' },
         { name = 'treesitter' },
         { name = 'emoji' },
-        { name = 'vimtex' },
+        -- { name = 'vimtex' },
         { name = "latex_symbols", option = { strategy = 0, }, },
 	    { name = 'spell', option = { 
 	        keep_all_entries = true,
@@ -335,12 +395,6 @@ require('lualine').setup {
         lualine_y = {'diagnostics'},
     },
 }
---vim.api.nvim_create_augroup("lualinugroup", { clear = true }
---vim.api.nvim_create_autocmd("User", {
---    group = "lualine_augroup",
---    pattern = "LspProgressStatusUpdated",
---    callback = require("lualine").refresh,
---})
 
 -- git
 require('gitsigns').setup()
@@ -409,40 +463,6 @@ local highlight = {
 }
 require("ibl").setup { indent = { char = {" "," "," "," "," "," "," "} } }
 
--- keymap
-vim.g.mapleader = " "
-vim.g.maplocalleader = "/"
-local opt = {
-    noremap = true,
-    silent = true,
-}
-local map = vim.api.nvim_set_keymap
-map("n", "<C-h>", "<C-w>h", opt)
-map("n", "<C-j>", "<C-w>j", opt)
-map("n", "<C-k>", "<C-w>k", opt)
-map("n", "<C-l>", "<C-w>l", opt)
-map("n", "<C-w>", ":Bdelete!<CR>", opt)
-map("n", "gh", "0", opt)
-map("n", "gl", "$", opt)
-map("n", "ge", "G", opt)
-map("v", "gh", "0", opt)
-map("v", "gl", "$", opt)
-map("v", "ge", "G", opt)
-map("n", "c", "s", opt)
-map("n", "d", "x", opt)
-map("n", "e", "ve", opt)
-map("n", "x", "<S-v>", opt)
-map("v", "y", "y<esc>", opt)
-map("v", "<", "<gv", opt)
-map("v", ">", ">gv", opt)
-map("v", "s", "<esc>/\\%V", opt)
-map("x", "x", "j", opt)
--- map("n", "<esc>", ":silent ! macism com.apple.keylayout.ABC<CR>", opt)
--- map("v", "<esc>", "<esc><esc>:silent ! macism com.apple.keylayout.ABC<CR>", opt)
--- map("x", "<esc>", "<esc> :silent ! macism com.apple.keylayout.ABC<CR>", opt)
--- map("n", "<C-c>", "gcc", opt)
--- map("v", "<C-c>", "gc", opt)
--- map("x", "<C-c>", "gc", opt)
 
 -- luasnip
 require("luasnip").config.set_config({
