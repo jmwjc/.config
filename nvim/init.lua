@@ -55,6 +55,8 @@ require("lazy").setup({
     -- 'micangl/cmp-vimtex',
     -- 'frabjous/knap',
     -- 'jakewvincent/texmagic.nvim',
+    --
+    {'kaarmu/typst.vim', ft = 'typst', lazy=false,},
 
     -- theme
     {'maxmx03/solarized.nvim', lazy = false, priority = 1000,
@@ -70,6 +72,7 @@ require("lazy").setup({
     -- comment
     {'numToStr/Comment.nvim', lazy = false,},
     {'folke/todo-comments.nvim', dependencies = { "nvim-lua/plenary.nvim" },opts={}},
+    "LudoPinelli/comment-box.nvim",
 
     -- Git
     {'kdheepak/lazygit.nvim', 
@@ -157,8 +160,16 @@ wk.register({
     d = { "<cmd>TroubleToggle document_diagnostics<CR>" , "diagnostic picker" },
     q = { "<cmd>TroubleToggle quickfix<CR>" , "quickfix picker" },
     t = { "<cmd>TodoTrouble<CR>" , "TodoList picker" },
-    p = { "<cmd>Telescope command_palette<CR>" , "TodoList picker" },
-    s = { "<cmd>Telescope luasnip<CR>" , "TodoList picker" },
+    p = { "<cmd>Telescope command_palette<CR>" , "palette picker" },
+    s = { "<cmd>Telescope luasnip<CR>" , "snippet picker" },
+    c = {
+        name = " □  Boxes",
+        b = { "<Cmd>CBccbox<CR>", "Box Title" },
+        t = { "<Cmd>CBllline<CR>", "Titled Line" },
+        l = { "<Cmd>CBline<CR>", "Simple Line" },
+        m = { "<Cmd>CBllbox14<CR>", "Marked" },
+        d = { "<Cmd>CBd<CR>", "Remove a box" },
+    }
 }, { prefix = "<leader>" })
 wk.register({
     e = { 'G' , "Last line" },
@@ -188,9 +199,12 @@ require('telescope').setup{
                 { "Stop", ":VimtexStopAll" },
                 { "Compile", ":VimtexCompile" },
             },
-	    {"diffview",
-            { "Diff current file", ":DiffviewFileHistory %"}
-        },
+            {"typst",
+                { "preview", ":TypstWatch" },
+            },
+	        {"diffview",
+                { "Diff current file", ":DiffviewFileHistory %"}
+            },
             {"snippets",":lua require('telescope').luasnip()"}
         },
         luasnip = require("telescope.themes").get_dropdown()
@@ -222,12 +236,13 @@ require("mason").setup({
 })
 -- LSP
 require("mason-lspconfig").setup {
-    ensure_installed = { 'ltex', 'texlab', 'marksman', 'julials', 'taplo' },
+    ensure_installed = { 'cmake', 'ltex', 'texlab', 'marksman', 'julials', 'taplo' },
 }
 -- lint
 require('lint').linters_by_ft = {
     markdown = { 'vale', 'alex' },
-    latex = { 'vale', 'alex', 'chktex' }
+    latex = { 'vale', 'alex', 'chktex' },
+    cmake = { 'cmakelang', 'cmakelint' },
 }
 -- cmp
 local cmp = require'cmp'
@@ -360,6 +375,16 @@ require('lspconfig')['julials'].setup {capabilities = capabilities}
 -- require('lspconfig')['taplo'].setup {capabilities = capabilities}
 vim.g.tex_flavor = 'latex'
 require('lspconfig')['texlab'].setup {capabilities = capabilities}
+require('lspconfig')['cmake'].setup {capabilities = capabilities}
+require'lspconfig'.typst_lsp.setup{
+	settings = {
+		exportPdf = "onType" -- Choose onType, onSave or never.
+        -- serverPath = "" -- Normally, there is no need to uncomment it.
+	}
+}
+-- require('lspconfig')['typst_lsp'].setup{
+--     settings = {exportPdf = "onType"}
+-- }
 
 vim.diagnostic.config({
     virtual_text = true,
@@ -419,8 +444,8 @@ vim.o.softtabstop = 4
 vim.o.shiftwidth = 4
 vim.go.shiftround = true
 vim.o.expandtab = true
-vim.o.autoindent = true
-vim.o.smartindent = true
+vim.g.autoindent = false
+vim.g.smartindent = false
 vim.o.ignorecase = true
 vim.o.smartcase = true
 vim.o.incsearch = true
@@ -444,16 +469,20 @@ vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 -- vim.opt.spell = true
 vim.opt.spelllang = {'en_us', 'cjk'}
-vim.g.vimtex_compiler_progname = 'nvr'
-vim.g.vimtex_compiler_latexmk = { aux_dir=".aux" }
-vim.g.vimtex_view_method = 'sioyek'
-vim.g.vimtex_indent_enabled = 0
-vim.g.vimtex_indent_on_ampersands = 0
+-- vim.g.vimtex_compiler_progname = 'nvr'
+vim.g.vimtex_compiler_latexmk = { aux_dir=".aux", out_dir='.build', executable='latexmk', options={ '-pdfxe', '-verbose', '-file-line-error', '-synctex=1', '-interaction=nonstopmode' } }
+vim.g.vimtex_view_method = 'skim'
+vim.g.vimtex_sioyek_options = '--execute-command toggle_synctex'
+-- vim.g.vimtex_indent_enabled = 0
+-- vim.o.vimtex_indent_conditionals = {open=''}
+-- vim.o.vimtex_indent_on_ampersands = 0
+-- vim.o.vimtex_indent_delims = {include_modified_math = 0}
+-- vim.o.vimtex_indent_ignored_envs = {'document','equation','align','subequations','split'}
 vim.g.vimtex_syntax_enabled = 0
 vim.g.vimtex_mappings_disable = {
     n = {'dse','dsc','ds$','dsd','cse','csc','cs$','csd'}
 }
-vim.g.vimtex_sioyek_options = "--execute-command toggle_synctex"
+vim.g.typst_pdf_viewer = 'sioyek'
 vim.g.macosime_normal_ime = 'com.apple.keylayout.ABC'
 vim.g.macosime_cjk_ime = 'com.apple.inputmethod.SCIM.ITABC'
 
@@ -612,7 +641,31 @@ ls.add_snippets(nil, {
         )),
         s({trig = "ltex", namr = "ltex", dscr = "ltex language setting"}, {
             t('% ltex: language='),i(1,'zh-CN')
-        })
+        }),
+        s({trig = "figure", namr = "figure", dscr = "add figure environment"}, fmta(
+        [[
+        \begin{figure}[!ht]
+        \centering
+        \includegraphics[width=\textwidth]{<>}
+        \caption{<>}\label{<>}
+        \end{figure}
+        ]],{ i(1), i(2), i(3) }
+        )),
+        s({trig = "table", namr = "table", dscr = "add table environment"}, fmta(
+        [[
+        \begin{table}[!ht]
+        \centering
+        \caption{<>}\label{<>}
+        \begin{tabular}{<>}
+        \toprule
+        <>
+        \midrule
+        <>
+        \bottomrule
+        \end{tabular}
+        \end{table}
+        ]], { i(1), i(2), i(3), i(4), i(5) }
+        ))
     }
 })
 
