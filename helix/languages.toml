@@ -1,59 +1,68 @@
 # brew install texlab
 # brew install marksman
-# brew install --cask oracle-jdk
-# brew install ltex-ls or HOMEBREW_BOTTLE_DOMAIN= brew install ltex-ls
-# brew install quantonganh/tap/snippets-ls
+# brew install ltex-ls-plus
 
-[language-server.texlab.config.texlab]
-build.args = [
+
+[language-server.texlab]
+command = "texlab"
+
+[language-server.texlab.config.texlab.build]
+onSave = true
+auxDirectory = ".aux"
+pdfDirectory = "."
+forwardSearchAfter = true
+args = [
     "-pdf",
     "-xelatex",
     "-auxdir=.aux",
     "-interaction=nonstopmode",
     "-synctex=1",
-    "-pvc",
+    # "-pvc",
     "%f"
 ]
-build.onSave = true
 
-auxDirectory = ".aux"
-build.auxDirectory = ".aux"
-build.pdfDirectory = "."
+[language-server.texlab.config.texlab.forwardSearch]
+executable = "sioyek"
+args = [
+    "--reuse-window",
+    "--nofocus",
+    "--execute-command",
+    "toggle_synctex",
+    "--inverse-search",
+    "texlab inverse-search -i \"%%1\" -l %%2",
+    "--forward-search-file",
+    "%f",
+    "--forward-search-line",
+    "%l",
+    "%p",  
+]
 
-# build.forwardSearchAfter = true
-# forwardSearch.executable = "sioyek"
-# forwardSearch.args = [
-#     "--reuse-window",
-#     "--nofocus",
-#     "--execute-command",
-#     "toggle_synctex",
-#     "--inverse-search",
-#     "hx -r -g \"%%1:%%2\"",
-#     "--forward-search-file",
-#     "%f",
-#     "--forward-search-line",
-#     "%l",
-#     "%p",  
-# ]
-chktex.onEdit = true
+[language-server.texlab.config.texlab.chktex]
+onOpenAndSave = true
+onEdit = true
 
-# please enter the absolute address in args.
-[language-server.tex-snippets-ls]
-command = "snippets-ls"
-args = [ "-config", "/Users/wujc/.config/helix/tex-snippets.json" ]
+[language-server.ltex-ls-plus]
+command = "ltex-ls-plus"
 
-[[language]]
-name = "markdown"
-language-servers = [ "marksman", "ltex-ls", "tex-snippets-ls" ]
-[language.auto-pairs]
-'(' = ')'
-'$' = '$'
-'[' = ']'
-'`' = '`'
-'{' = '}'
-'*' = '*'
-'~' = '~'
+[language-server.ltex-ls-plus.config.ltex]
+# 启用哪些文档类型的检查 (可根据需要勾选)
+enabled = ["latex", "tex", "bibtex", "markdown"]
+# 设置检查语言，支持 "zh-CN", "en-US" 等
+language = "en-US"
+additionalRules.motherTongue = "zh-CN"
+completionEnabled = true
+
+
+# 常用自定义规则与字典设置
+# dictionary = { "zh-CN" = ["Helix", "TexLab", "Neovim"] } # 忽略拼写错误的自定义词汇
+# disabledRules = { "zh-CN" = ["PROOFREADING"] }
 
 [[language]]
 name = "latex"
-language-servers = [ "texlab", "ltex-ls", "tex-snippets-ls" ]
+language-servers = ["texlab", "ltex-ls-plus"]
+auto-format = true
+indent = {tab-width = 4, unit = "\t"}
+
+[[language]]
+name = "markdown"
+language-servers = ["marksman", "ltex-ls-plus"]

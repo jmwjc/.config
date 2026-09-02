@@ -2,7 +2,7 @@
 # brew tap laishulu/macism
 # brew install macism
 
-theme = "solarized_light"
+theme = "nord"
 
 [editor]
 line-number = "relative"
