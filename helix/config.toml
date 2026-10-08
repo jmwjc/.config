@@ -7,6 +7,9 @@ theme = "nord"
 [editor]
 line-number = "relative"
 cursorline = true
+completion-trigger-len = 1
+completion-timeout = 5
+completion-replace = true
 
 [editor.statusline]
 left = ["mode", "spinner", "read-only-indicator", "file-modification-indicator"]
@@ -27,6 +30,11 @@ render = true
 [editor.soft-wrap]
 enable = true
 wrap-indicator = ""
+
+# [editor.word-completion]
+# enable = true
+# # Set the trigger length lower so that words are completed more often
+# trigger-length = 4
 
 # macos automatically swith keylayout to en
 [keys.normal]
