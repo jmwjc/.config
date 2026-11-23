@@ -1,4 +1,4 @@
 # This file contains fish universal variable definitions.
 # VERSION: 3.0
 SETUVAR __fish_initialized:4300
-SETUVAR fish_user_paths:/opt/homebrew/bin
+SETUVAR fish_user_paths:/Users/wujunchao/\x2eantigravity/antigravity/bin\x1e/Users/wujunchao/\x2econfig/kaku/fish/bin\x1e/opt/homebrew/bin
