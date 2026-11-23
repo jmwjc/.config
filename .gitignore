@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# Editor/app backups
+*.bak
+
+# Machine-local application data and caches
+ParaView/
+clash/
+com.tolaria.app/
+configstore/
+opencode/
+uv/
+mole/sudoers-version
