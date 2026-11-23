@@ -12,29 +12,27 @@ auxDirectory = ".aux"
 pdfDirectory = "."
 forwardSearchAfter = true
 args = [
-    "-pdf",
     "-xelatex",
     "-auxdir=.aux",
     "-interaction=nonstopmode",
+    "-file-line-error",
     "-synctex=1",
     # "-pvc",
     "%f"
 ]
 
 [language-server.texlab.config.texlab.forwardSearch]
-executable = "sioyek"
+# galleypdf：Synctex 正向搜索；-g 表示不把 Galley 窗口提到前台。
+# 不要加 %c（texlab 会把后面的参数串在一起），列号非必需。
+executable = "galleypdf"
 args = [
-    "--nofocus",
-    "--reuse-window",
-    "--execute-command",
-    "toggle_synctex",
-    "--inverse-search",
-    "texlab inverse-search -i \"%%1\" -l %%2",
-    "--forward-search-file",
-    "%f",
-    "--forward-search-line",
+    "forward",
+    "-g",
+    "-l",
     "%l",
-    "%p",  
+    "-s",
+    "%f",
+    "%p",
 ]
 
 [language-server.texlab.config.texlab.chktex]
@@ -87,6 +85,8 @@ indent = {tab-width = 4, unit = "\t"}
 [[language]]
 name = "markdown"
 language-servers = ["marksman", "ltex-ls-plus", "scls"]
+formatter = { command = "dprint", args = ["fmt", "--stdin", "md"] }
+auto-format = true
 
 
 [language-server.rust-analyzer.config.rust-analyzer]
